@@ -221,8 +221,7 @@ public class SimulasiRambuKota extends JFrame {
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < riwayatPesan.size(); i++) {
-            sb.append(i + 1).append(". ").append(riwayatPesan.get(i)).append("
-");
+            sb.append(i + 1).append(". ").append(riwayatPesan.get(i)).append("\n");
         }
         taRiwayat.setText(sb.toString());
     }
