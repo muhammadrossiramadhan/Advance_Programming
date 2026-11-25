@@ -10,11 +10,17 @@ public class PetaKota {
     private final HashMap<String, LinkedList<Jalur>> petaSambungan = new HashMap<>();
 
     public void tambahPerempatan(Perempatan perempatan) {
+        if (perempatan == null) {
+            return;
+        }
         daftarPerempatan.put(perempatan.getKode(), perempatan);
         petaSambungan.putIfAbsent(perempatan.getKode(), new LinkedList<>());
     }
 
     public void tambahJalur(Jalur jalur) throws DataTidakValidException {
+        if (jalur == null) {
+            throw new DataTidakValidException("Objek jalur tidak boleh null!");
+        }
         String kodeAsal = jalur.getDari().getKode();
         String kodeTujuan = jalur.getKe().getKode();
 

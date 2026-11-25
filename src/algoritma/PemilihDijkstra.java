@@ -1,6 +1,7 @@
 package algoritma;
 
 import exception.DataTidakValidException;
+import exception.RuteTidakDitemukanException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -30,8 +31,11 @@ public abstract class PemilihDijkstra implements PemilihJalur {
 
     @Override
     public LinkedList<Perempatan> cariRute(PetaKota peta, String kodeAsal, String kodeTujuan)
-            throws DataTidakValidException {
+            throws DataTidakValidException, RuteTidakDitemukanException {
 
+        if (peta == null) {
+            throw new DataTidakValidException("Objek peta kota tidak boleh null!");
+        }
         peta.cariPerempatan(kodeAsal);
         peta.cariPerempatan(kodeTujuan);
 
@@ -70,7 +74,7 @@ public abstract class PemilihDijkstra implements PemilihJalur {
         }
 
         if (biayaTerbaik.get(kodeTujuan) == Double.POSITIVE_INFINITY) {
-            throw new DataTidakValidException(
+            throw new RuteTidakDitemukanException(
                 "Tidak ada jalur yang bisa menghubungkan " + kodeAsal + " ke " + kodeTujuan + "!"
             );
         }
