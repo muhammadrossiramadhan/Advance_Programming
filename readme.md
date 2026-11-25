@@ -1,5 +1,11 @@
 # Dokumentasi Proyek: Sistem Rambu Informasi Dinamis Perkotaan
 
+![Animasi Simulasi Rambu Kota Malang](assets/animasi-rambu.svg)
+
+> **Catatan Demo 3D Interaktif (Three.js):** GitHub `README.md` tidak mengizinkan eksekusi `<script>` atau `<canvas>` JavaScript secara langsung demi keamanan. Untuk menampilkan animasi 3D Three.js secara penuh di GitHub:
+> 1. Simpan file HTML animasi tersebut ke `docs/index.html` lalu aktifkan **GitHub Pages** (`Settings -> Pages -> Branch: main, /docs`), atau
+> 2. Klik tombol **`⏺ Rekam semua (.webm)`** di halaman HTML tersebut lalu drag-and-drop file `.webm` hasil rekaman langsung ke editor `readme.md` di GitHub.
+
 Dokumen ini menjelaskan struktur package, arsitektur OOP, alasan penggunaan algoritma Dijkstra dengan faktor `pengaliMacet`, serta cara menjalankan aplikasi GUI berbasis Java Swing (`javax.swing.*`).
 
 ---
