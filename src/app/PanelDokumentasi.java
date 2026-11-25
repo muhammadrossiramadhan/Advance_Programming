@@ -389,16 +389,18 @@ public class PanelDokumentasi extends JPanel {
         StringBuilder sb = new StringBuilder();
         sb.append("<p>Proyek terbagi menjadi 4 package utama dengan pemisahan tanggung jawab yang jelas:</p>");
         sb.append("<h2>Package exception &amp; model</h2><ul>");
-        sb.append("<li><code>DataTidakValidException.java</code>: Custom exception untuk input negatif, kapasitas &lt;= 0, atau kode tidak ditemukan.</li>");
+        sb.append("<li><code>SistemRambuException.java</code>, <code>DataTidakValidException.java</code>, &amp; <code>RuteTidakDitemukanException.java</code>: Hirarki custom exception untuk input negatif, kapasitas &lt;= 0, kode tidak ditemukan, atau rute terputus.</li>");
         sb.append("<li><code>KondisiJalan.java</code>: Enum status jalan (<code>LANCAR</code> 1.0x, <code>RAMAI</code> 1.5x, <code>PADAT</code> 2.0x, <code>MACET</code> 3.0x).</li>");
         sb.append("<li><code>Perempatan.java</code>: Representasi simpul (node) <code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>, <code>E</code>.</li>");
         sb.append("<li><code>Jalur.java</code>: Representasi sisi (edge) berarah dengan <code>waktuNormal</code>, <code>kapasitasMaksimal</code>, dan <code>cekKondisi()</code>.</li>");
-        sb.append("<li><code>PetaKota.java</code>: Struktur graf memakai <code>HashMap</code> dan <code>LinkedList</code>.</li></ul>");
+        sb.append("<li><code>PetaKota.java</code>: Struktur graf memakai <code>HashMap</code> dan <code>LinkedList</code>.</li>");
+        sb.append("<li><code>PesanRambu.java</code> (beserta <code>PesanLancar</code>, <code>PesanRamai</code>, <code>PesanPadat</code>, <code>PesanMacet</code>) &amp; <code>PesanRambuFactory.java</code>: Hirarki pesan papan rambu dinamis berbasis Factory Pattern.</li>");
+        sb.append("<li><code>RiwayatPesan.java</code>: Penyimpan catatan kronologis perubahan pesan rambu memakai <code>LinkedList&lt;PesanRambu&gt;</code>.</li></ul>");
         sb.append("<h2>Package algoritma &amp; app</h2><ul>");
         sb.append("<li><code>PemilihJalur.java</code>: Interface kontrak pencarian rute <code>cariRute(peta, asal, tujuan)</code>.</li>");
         sb.append("<li><code>PemilihDijkstra.java</code>: Abstract class Dijkstra berbasis <code>PriorityQueue</code>.</li>");
         sb.append("<li><code>PemilihJalurTerpendek.java</code> &amp; <code>PemilihJalurTercepat.java</code>: Subclass perhitungan biaya.</li>");
-        sb.append("<li><code>PanelPetaLive.java</code>, <code>PanelPovPengendara.java</code>, <code>PanelInfoBobot.java</code>, <code>PanelDokumentasi.java</code>, <code>SimulasiRambuKota.java</code>: Antarmuka GUI Swing.</li>");
+        sb.append("<li><code>PanelPetaLive.java</code>, <code>PanelPovPengendara.java</code>, <code>PanelInfoBobot.java</code>, <code>PanelRiwayatPesan.java</code>, <code>PanelDokumentasi.java</code>, <code>SimulasiRambuKota.java</code>: Antarmuka GUI Swing.</li>");
         sb.append("</ul>");
         return bungkusHtml("3. Peta Package &amp; Seluruh File Kode", sb.toString());
     }
@@ -407,10 +409,10 @@ public class PanelDokumentasi extends JPanel {
         StringBuilder sb = new StringBuilder();
         sb.append("<ol>");
         sb.append("<li><b>Encapsulation:</b> Atribut pada <code>Jalur</code> dan <code>Perempatan</code> bersifat <code>private</code>, dengan validasi pada <code>setJumlahKendaraan()</code>.</li>");
-        sb.append("<li><b>Abstraction &amp; Inheritance:</b> <code>PemilihDijkstra</code> mewariskan kerangka algoritma ke <code>PemilihJalurTercepat</code> dan <code>PemilihJalurTerpendek</code>.</li>");
-        sb.append("<li><b>Polymorphism:</b> Method abstrak <code>hitungBiaya(Jalur)</code> di-override berbeda oleh mode Tercepat dan Terpendek.</li>");
+        sb.append("<li><b>Abstraction &amp; Inheritance:</b> <code>PemilihDijkstra</code> mewariskan kerangka algoritma ke <code>PemilihJalurTercepat</code> dan <code>PemilihJalurTerpendek</code>, serta <code>PesanRambu</code> mewariskan kontrak pesan ke <code>PesanLancar</code>, <code>PesanRamai</code>, <code>PesanPadat</code>, dan <code>PesanMacet</code>.</li>");
+        sb.append("<li><b>Polymorphism:</b> Method abstrak <code>hitungBiaya(Jalur)</code> di-override berbeda oleh mode Tercepat dan Terpendek, dan <code>PesanRambuFactory</code> menghasilkan objek <code>PesanRambu</code> sesuai kondisi.</li>");
         sb.append("<li><b>Interface:</b> <code>PemilihJalur</code> menjadi kontrak seragam untuk seluruh strategi rute.</li>");
-        sb.append("<li><b>Exception Handling:</b> <code>DataTidakValidException</code> dan <code>NumberFormatException</code> ditangkap GUI lewat <code>JOptionPane</code>.</li>");
+        sb.append("<li><b>Exception Handling:</b> <code>DataTidakValidException</code>, <code>RuteTidakDitemukanException</code>, dan <code>NumberFormatException</code> ditangkap GUI lewat <code>JOptionPane</code>.</li>");
         sb.append("<li><b>Collection Framework:</b> <code>HashMap</code>, <code>PriorityQueue</code>, dan <code>LinkedList</code>.</li>");
         sb.append("</ol>");
         return bungkusHtml("4. Penerapan 6 Konsep OOP di Kode", sb.toString());

@@ -4,6 +4,8 @@ import algoritma.PemilihJalur;
 import algoritma.PemilihJalurTercepat;
 import algoritma.PemilihJalurTerpendek;
 import exception.DataTidakValidException;
+import exception.RuteTidakDitemukanException;
+import exception.SistemRambuException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,12 +34,15 @@ import javax.swing.border.TitledBorder;
 import model.Jalur;
 import model.KondisiJalan;
 import model.Perempatan;
+import model.PesanRambu;
+import model.PesanRambuFactory;
 import model.PetaKota;
+import model.RiwayatPesan;
 
 public class SimulasiRambuKota extends JFrame {
     private final PetaKota peta;
     private PemilihJalur pencariJalur;
-    private final LinkedList<String> riwayatPesan;
+    private final RiwayatPesan riwayatPesan;
 
     private final JComboBox<String> cbJalur;
     private final JTextField tfJumlahKendaraan;
@@ -48,6 +53,7 @@ public class SimulasiRambuKota extends JFrame {
     private final PanelPetaLive panelPetaLive;
     private final PanelPovPengendara panelPovPengendara;
     private final PanelInfoBobot panelInfoBobot;
+    private final PanelRiwayatPesan panelRiwayatPesan;
     private final JTextArea taRiwayat;
     private final Timer timerAnimasi;
 
@@ -57,7 +63,7 @@ public class SimulasiRambuKota extends JFrame {
     public SimulasiRambuKota() {
         peta = new PetaKota();
         pencariJalur = new PemilihJalurTercepat();
-        riwayatPesan = new LinkedList<>();
+        riwayatPesan = new RiwayatPesan();
 
         inisialisasiDataPeta();
 
@@ -144,6 +150,7 @@ public class SimulasiRambuKota extends JFrame {
         panelPetaLive = new PanelPetaLive(peta);
         panelPovPengendara = new PanelPovPengendara();
         panelInfoBobot = new PanelInfoBobot();
+        panelRiwayatPesan = new PanelRiwayatPesan();
 
         JSplitPane splitKanan = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelPovPengendara, panelInfoBobot);
         splitKanan.setResizeWeight(0.45);
@@ -168,8 +175,15 @@ public class SimulasiRambuKota extends JFrame {
         JTabbedPane tabUtama = new JTabbedPane();
         tabUtama.setFont(new Font("Segoe UI", Font.BOLD, 16));
         tabUtama.addTab("Simulasi Live (Peta, POV & Bobot)", pnlSimulasi);
+        tabUtama.addTab("Riwayat Log Rambu (LinkedList)", panelRiwayatPesan);
         tabUtama.addTab("Dokumentasi & Arsitektur Kode", new PanelDokumentasi());
         add(tabUtama, BorderLayout.CENTER);
+
+        panelRiwayatPesan.getBtnBersihkan().addActionListener(e -> {
+            riwayatPesan.bersihkan();
+            taRiwayat.setText(riwayatPesan.formatSemuaCatatan());
+            panelRiwayatPesan.perbaruiTampilan(riwayatPesan);
+        });
 
         btnUpdate.addActionListener(e -> eksekusiSimulasi());
         btnResetMobil.addActionListener(e -> panelPetaLive.resetMobil());
@@ -177,12 +191,12 @@ public class SimulasiRambuKota extends JFrame {
         rbTercepat.addActionListener(e -> {
             pencariJalur = new PemilihJalurTercepat();
             panelPetaLive.setModeTercepat(true);
-            perbaruiTampilanRuteSaja();
+            perbaruiTampilanRuteSaja(true);
         });
         rbTerpendek.addActionListener(e -> {
             pencariJalur = new PemilihJalurTerpendek();
             panelPetaLive.setModeTercepat(false);
-            perbaruiTampilanRuteSaja();
+            perbaruiTampilanRuteSaja(true);
         });
 
         btnTesLancar.addActionListener(e -> terapkanPreset("B-C", 20, true));
@@ -192,7 +206,7 @@ public class SimulasiRambuKota extends JFrame {
         btnTesCdMacet.addActionListener(e -> terapkanPreset("C-D", 120, false));
         btnTesAbMacet.addActionListener(e -> terapkanPreset("A-B", 120, false));
 
-        perbaruiTampilanRuteSaja();
+        perbaruiTampilanRuteSaja(false);
         panelPetaLive.resetMobil();
 
         timerAnimasi = new Timer(33, e -> {
@@ -302,55 +316,68 @@ public class SimulasiRambuKota extends JFrame {
                 "Validasi Data",
                 JOptionPane.WARNING_MESSAGE
             );
+        } catch (RuteTidakDitemukanException ex) {
+            pesanRambuAktif = "RUTE TIDAK DITEMUKAN";
+            warnaRambuAktif = new Color(185, 28, 28);
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Rute Terputus / Tidak Ditemukan",
+                JOptionPane.WARNING_MESSAGE
+            );
+        } catch (SistemRambuException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Kesalahan Sistem Rambu",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    private void perbaruiTampilanRuteSaja() {
+    private void perbaruiTampilanRuteSaja(boolean tampilkanDialogError) {
         try {
             LinkedList<Perempatan> rute = pencariJalur.cariRute(peta, "A", "D");
             panelPetaLive.setRuteAktif(rute);
             panelInfoBobot.perbaruiData(peta, rbTercepat.isSelected(), rute);
             String mode = rbTercepat.isSelected() ? "TERCEPAT" : "TERPENDEK";
-            pesanRambuAktif = "MODE " + mode + " | RUTE: " + formatRute(rute);
-            warnaRambuAktif = new Color(37, 99, 235);
-        } catch (DataTidakValidException ex) {
+            String kodeJalur = (String) cbJalur.getSelectedItem();
+            if (kodeJalur != null) {
+                Jalur jalur = peta.cariJalur(kodeJalur);
+                PesanRambu pesanObj = PesanRambuFactory.buatPesan(jalur, mode, rute);
+                pesanRambuAktif = pesanObj.getPesanTerminal();
+                warnaRambuAktif = pesanObj.getWarnaLampu();
+            } else {
+                pesanRambuAktif = "MODE " + mode + " | RUTE: " + formatRute(rute);
+                warnaRambuAktif = new Color(37, 99, 235);
+            }
+        } catch (RuteTidakDitemukanException ex) {
             pesanRambuAktif = "RUTE TIDAK TERSEDIA";
             warnaRambuAktif = new Color(185, 28, 28);
+            if (tampilkanDialogError) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Rute Tidak Ditemukan", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (SistemRambuException ex) {
+            pesanRambuAktif = "KESALAHAN DATA PETA";
+            warnaRambuAktif = new Color(185, 28, 28);
+            if (tampilkanDialogError) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Validasi Data", JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 
-    private void perbaruiVisualRambu(KondisiJalan kondisi, String kodeJalur, LinkedList<Perempatan> rute) {
-        String ruteTeks = formatRute(rute);
+    private void perbaruiVisualRambu(KondisiJalan kondisi, String kodeJalur, LinkedList<Perempatan> rute)
+            throws SistemRambuException {
         String mode = rbTercepat.isSelected() ? "TERCEPAT" : "TERPENDEK";
+        PesanRambu pesanObj = PesanRambuFactory.buatPesan(kondisi, kodeJalur, mode, rute);
 
-        switch (kondisi) {
-            case LANCAR:
-                pesanRambuAktif = "LANCAR (" + mode + "): " + ruteTeks;
-                warnaRambuAktif = new Color(46, 125, 50);
-                break;
-            case RAMAI:
-                pesanRambuAktif = "RAMAI (" + mode + "): " + ruteTeks;
-                warnaRambuAktif = new Color(202, 138, 4);
-                break;
-            case PADAT:
-                pesanRambuAktif = kodeJalur + " PADAT! RUTE: " + ruteTeks;
-                warnaRambuAktif = new Color(230, 81, 0);
-                break;
-            case MACET:
-            default:
-                pesanRambuAktif = kodeJalur + " MACET! RUTE: " + ruteTeks;
-                warnaRambuAktif = new Color(198, 40, 40);
-                break;
-        }
+        pesanRambuAktif = pesanObj.getPesanTerminal();
+        warnaRambuAktif = pesanObj.getWarnaLampu();
 
-        String catatan = String.format("[%s | %s] Jalur %s diperbarui -> Rute: %s", kondisi, mode, kodeJalur, ruteTeks);
-        riwayatPesan.addFirst(catatan);
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < riwayatPesan.size(); i++) {
-            sb.append(i + 1).append(". ").append(riwayatPesan.get(i)).append(System.lineSeparator());
-        }
-        taRiwayat.setText(sb.toString());
+        riwayatPesan.catat(pesanObj);
+        taRiwayat.setText(riwayatPesan.formatSemuaCatatan());
+        taRiwayat.setCaretPosition(0);
+        panelRiwayatPesan.perbaruiTampilan(riwayatPesan);
     }
 
     private String formatRute(LinkedList<Perempatan> rute) {
@@ -362,6 +389,14 @@ public class SimulasiRambuKota extends JFrame {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public void dispose() {
+        if (timerAnimasi != null && timerAnimasi.isRunning()) {
+            timerAnimasi.stop();
+        }
+        super.dispose();
     }
 
     public static void main(String[] args) {

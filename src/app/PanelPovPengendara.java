@@ -41,16 +41,16 @@ public class PanelPovPengendara extends JPanel {
             Color warnaRambu,
             double sudutMobilRad,
             double dtDetik) {
-        this.jalurAktif = jalurAktif;
-        this.kondisiJalan = kondisiJalan;
+        this.jalurAktif = jalurAktif != null ? jalurAktif : "-";
+        this.kondisiJalan = kondisiJalan != null ? kondisiJalan : KondisiJalan.LANCAR;
         this.kecepatanKmh = kecepatanKmh;
-        this.arahBerikutnya = arahBerikutnya;
-        this.pesanRambu = pesanRambu;
-        this.warnaRambu = warnaRambu;
+        this.arahBerikutnya = arahBerikutnya != null ? arahBerikutnya : "-";
+        this.pesanRambu = pesanRambu != null ? pesanRambu : "KONDISI LANCAR";
+        this.warnaRambu = warnaRambu != null ? warnaRambu : new Color(34, 139, 64);
         this.sudutSetir = Math.sin(sudutMobilRad) * 0.25;
 
         double lajuMarka;
-        switch (kondisiJalan) {
+        switch (this.kondisiJalan) {
             case LANCAR:
                 lajuMarka = 1.65;
                 break;
