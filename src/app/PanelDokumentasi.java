@@ -330,6 +330,7 @@ public class PanelDokumentasi extends JPanel {
         kontenTopik.put("4. Penerapan 6 Konsep OOP", buatHtmlKonsepOop());
         kontenTopik.put("5. Cara Kerja Dijkstra & Pengali", buatHtmlDijkstra());
         kontenTopik.put("6. Panduan GUI & Skenario Uji", buatHtmlPanduanGui());
+        kontenTopik.put("7. FAQ Sidang & Tanya Jawab", buatHtmlFaqSidang());
     }
 
     private String bungkusHtml(String judul, String isi) {
@@ -444,5 +445,52 @@ public class PanelDokumentasi extends JPanel {
         sb.append("<li><b>Uji Validasi Error:</b> Masukkan angka negatif seperti <code>-50</code> atau teks bukan angka untuk melihat dialog <code>JOptionPane</code>.</li>");
         sb.append("</ol>");
         return bungkusHtml("6. Panduan GUI &amp; Skenario Uji", sb.toString());
+    }
+
+    private String buatHtmlFaqSidang() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<p>Kumpulan pertanyaan kunci uji lisan beserta jawaban singkat dan lokasi kode terkait:</p>");
+
+        sb.append("<h2>1. Kenapa B-C berstatus RAMAI belum pindah ke jalur alternatif?</h2>");
+        sb.append("<p>Status ditentukan oleh rasio <code>jumlahKendaraan / kapasitasMaksimal</code>, bukan oleh <code>pengaliMacet</code>. Saat <code>B-C</code> RAMAI (50–74%), pengalinya <code>1.5x</code> sehingga bobot <code>B-C</code> jadi <code>4 x 1.5 = 6</code>. Total rute utama <code>A-&gt;B-&gt;C-&gt;D = 11</code>, masih lebih kecil dari rute bawah <code>A-&gt;B-&gt;E-&gt;D = 12</code>.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>model/Jalur.java</code> (<code>hitungRasioKepadatan()</code>, <code>cekKondisi()</code>) &amp; <code>model/KondisiJalan.java</code> (<code>getPengaliMacet()</code>).</p>");
+
+        sb.append("<h2>2. Peran HashMap, LinkedList, dan PriorityQueue?</h2>");
+        sb.append("<p><code>HashMap</code> untuk pencarian simpul/jalur <code>O(1)</code>. <code>LinkedList</code> untuk daftar ketetanggaan, menyusun rute mundur via <code>addFirst()</code>, dan riwayat log terbaru. <code>PriorityQueue</code> (min-heap) mengambil biaya terkecil <code>O(log V)</code>; jika diganti <code>LinkedList</code> biasa, Dijkstra berubah menjadi FIFO/BFS yang bisa salah pilih rute atau melambat jadi <code>O(V^2)</code>.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>model/PetaKota.java</code> (<code>daftarPerempatan</code>, <code>daftarJalur</code>, <code>petaSambungan</code>), <code>algoritma/PemilihDijkstra.java</code> (<code>AntreanCek</code>, <code>cariRute()</code>), &amp; <code>app/SimulasiRambuKota.java</code> (<code>riwayatPesan</code>).</p>");
+
+        sb.append("<h2>3. Kenapa PemilihDijkstra dibuat abstract class padahal sudah ada interface PemilihJalur?</h2>");
+        sb.append("<p>Agar logika inti Dijkstra tidak diduplikasi di dua subclass. Interface <code>PemilihJalur</code> jadi kontrak untuk GUI, sedangkan <code>PemilihDijkstra</code> menyimpan kerangka algoritma dan mewajibkan subclass meng-override <code>protected abstract double hitungBiaya(Jalur)</code> (<i>Runtime Polymorphism</i>).</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>algoritma/PemilihJalur.java</code>, <code>algoritma/PemilihDijkstra.java</code>, <code>algoritma/PemilihJalurTercepat.java</code>, &amp; <code>algoritma/PemilihJalurTerpendek.java</code>.</p>");
+
+        sb.append("<h2>4. Alur Encapsulation &amp; Exception saat input -50 atau 'abc'?</h2>");
+        sb.append("<p><code>jumlahKendaraan</code> dibuat <code>private</code> agar hanya bisa diubah lewat <code>setJumlahKendaraan()</code>. Input <code>'abc'</code> langsung memicu <code>NumberFormatException</code> (unchecked) di <code>Integer.parseInt()</code>. Input <code>-50</code> lolos <code>parseInt()</code> lalu ditolak validasi <code>jumlahBaru &lt; 0</code> yang melempar <code>DataTidakValidException</code> (checked) ke GUI untuk ditampilkan lewat <code>JOptionPane</code>.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>model/Jalur.java</code> (<code>setJumlahKendaraan()</code>), <code>exception/DataTidakValidException.java</code>, &amp; <code>app/SimulasiRambuKota.java</code> (<code>eksekusiSimulasi()</code>).</p>");
+
+        sb.append("<h2>5. Simulasi hitung Dijkstra: B-C Padat (85) vs A-B Macet (120)?</h2>");
+        sb.append("<p>Saat <code>B-C = 85</code> (PADAT, <code>2.0x</code>), <code>B-C = 8</code> sehingga <code>A-&gt;B-&gt;C-&gt;D = 13 &gt; 12</code> -&gt; pindah ke <code>A-&gt;B-&gt;E-&gt;D (12)</code>. Saat <code>A-B = 120</code> (MACET, <code>3.0x</code>), <code>A-B = 9</code> sehingga jalur utama (15) dan bawah (18) ikut terdampak -&gt; pindah ke jalur atas <code>A-&gt;C-&gt;D (13)</code>.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>algoritma/PemilihJalurTercepat.java</code> (<code>hitungBiaya()</code>) &amp; <code>app/PanelInfoBobot.java</code> (<code>perbaruiData()</code>).</p>");
+
+        sb.append("<h2>6. Bagaimana GUI Swing terhubung ke backend tanpa mencampuradukkan kode?</h2>");
+        sb.append("<p>Package <code>model</code>, <code>algoritma</code>, dan <code>exception</code> bebas dari import <code>javax.swing</code> atau <code>java.awt</code> (<i>Separation of Concerns</i>). <code>SimulasiRambuKota</code> hanya mengirim input ke <code>model</code>/<code>algoritma</code> lalu meneruskan hasilnya ke panel gambar.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>app/SimulasiRambuKota.java</code> &amp; <code>app/PanelPetaLive.java</code>.</p>");
+
+        sb.append("<h2>7. Fungsi pengecekan if (sekarang.totalBiaya &gt; biayaTerbaik.get(...)) continue;?</h2>");
+        sb.append("<p><code>PriorityQueue</code> Java tidak punya method <i>decrease-key</i>, sehingga saat ditemukan jalur lebih murah, entri baru ditambahkan tanpa menghapus entri lama. Baris ini membuang entri basi (lebih mahal) agar tidak diproses ulang.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>algoritma/PemilihDijkstra.java</code> (<code>cariRute()</code>).</p>");
+
+        sb.append("<h2>8. Tipe graf: Directed atau Undirected? Apa jadinya cariRute(D, A)?</h2>");
+        sb.append("<p><b>Directed Graph</b> (berarah), karena <code>tambahJalur()</code> hanya menambah sisi dari <code>kodeAsal</code> ke <code>kodeTujuan</code>. Jika mencari <code>D -&gt; A</code>, <code>biayaTerbaik</code> tetap <code>POSITIVE_INFINITY</code> sehingga melempar <code>DataTidakValidException</code>.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>model/PetaKota.java</code> (<code>tambahJalur()</code>) &amp; <code>algoritma/PemilihDijkstra.java</code>.</p>");
+
+        sb.append("<h2>9. Kenapa animasi pakai javax.swing.Timer, bukan while(true) + Thread.sleep()?</h2>");
+        sb.append("<p>Loop <code>while(true)</code> akan mengunci <b>EDT (Event Dispatch Thread)</b> sehingga GUI macet (<i>Not Responding</i>). <code>javax.swing.Timer(33, ...)</code> berjalan non-blocking dan aman secara thread di atas EDT.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>app/SimulasiRambuKota.java</code> (<code>timerAnimasi</code>, <code>main()</code> dengan <code>SwingUtilities.invokeLater()</code>).</p>");
+
+        sb.append("<h2>10. Kenapa KondisiJalan memakai enum ber-parameter, bukan String/int?</h2>");
+        sb.append("<p>Menjamin <i>Type Safety</i> (anti salah ketik saat kompilasi) dan melekatkan nilai <code>pengaliMacet</code> langsung ke statusnya sehingga tidak perlu <code>if-else</code> berulang.</p>");
+        sb.append("<p><b>Lokasi Kode:</b> <code>model/KondisiJalan.java</code>.</p>");
+
+        return bungkusHtml("7. FAQ Sidang &amp; Tanya Jawab", sb.toString());
     }
 }
